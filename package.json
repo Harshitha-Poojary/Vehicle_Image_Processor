@@ -1,0 +1,21 @@
+{
+  "name": "vehicle-image-processor",
+  "version": "1.0.0",
+  "description": "Async backend for uploading and analyzing vehicle field images (blur, brightness, duplicate, screenshot/photo-of-photo, tamper, plate-format checks).",
+  "main": "src/server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.3.0",
+    "express": "^4.19.2",
+    "multer": "^1.4.5-lts.1",
+    "sharp": "^0.33.5",
+    "uuid": "^9.0.1"
+  },
+  "optionalDependencies": {
+    "tesseract.js": "^5.1.0"
+  }
+}
