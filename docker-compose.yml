@@ -1,4 +1,4 @@
-version: "3.9"
+
 
 services:
   postgres:
@@ -82,10 +82,9 @@ services:
       AWS_ACCESS_KEY_ID: minioadmin
       AWS_SECRET_ACCESS_KEY: minioadmin
       PORT: 3000
-    # Runs the DB migration once, then starts the app
-    command: >
-      sh -c "npm run migrate && npm start"
+    command: npm start
 
 volumes:
   postgres_data:
   minio_data:
+ 
