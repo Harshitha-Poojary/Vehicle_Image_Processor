@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vehicle Image Processor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="inkTexture" x="-20%" y="-20%" width="140%" height="140%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" result="noise" seed="4"/>
+    <feDisplacementMap in="SourceGraphic" in2="noise" scale="3"/>
+  </filter>
+</svg>
+
+<div class="floor"></div>
+
+<header class="site-head">
+  <div class="head-inner">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 48 24" width="40" height="20">
+          <path d="M2 17 L6 8 Q8 5 12 5 H30 Q34 5 36 8 L40 17 Z" fill="none" stroke="currentColor" stroke-width="2"/>
+          <circle cx="12" cy="18" r="3.2" fill="currentColor"/>
+          <circle cx="34" cy="18" r="3.2" fill="currentColor"/>
+        </svg>
+      </span>
+      <div class="brand-text">
+        <h1>Vehicle Image Processor</h1>
+        <p class="tagline">Field photo intake &amp; quality inspection line</p>
+      </div>
+    </div>
+    <div class="head-meta">
+      <span class="meta-chip"><span class="dot dot-live"></span> intake open</span>
+    </div>
+  </div>
+</header>
+
+<main class="line">
+
+  <section class="bay" id="bay-upload">
+    <div class="bay-label"><span class="bay-num">BAY&nbsp;01</span><span class="bay-name">Upload</span></div>
+
+    <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Upload vehicle image">
+      <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp" hidden>
+
+      <div class="dz-idle" id="dzIdle">
+        <svg class="dz-icon" viewBox="0 0 64 64" width="56" height="56" aria-hidden="true">
+          <path d="M12 44v8a4 4 0 0 0 4 4h32a4 4 0 0 0 4-4v-8" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+          <path d="M32 40V10 M20 22l12-12 12 12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <p class="dz-title">Drop a vehicle photo, or click to browse</p>
+        <p class="dz-sub">JPEG · PNG · WEBP &nbsp;—&nbsp; up to 15MB</p>
+      </div>
+
+      <div class="dz-preview" id="dzPreview" hidden>
+        <img id="previewImg" alt="Selected vehicle photo preview">
+        <div class="dz-preview-meta">
+          <span id="previewName" class="file-name"></span>
+          <span id="previewSize" class="file-size"></span>
+        </div>
+        <button type="button" class="btn-ghost-sm" id="clearBtn">Choose a different photo</button>
+      </div>
+    </div>
+
+    <div class="bay-actions">
+      <button type="button" class="btn-primary" id="submitBtn" disabled>Send to inspection</button>
+      <p class="hint" id="uploadHint">Select a photo to begin.</p>
+    </div>
+  </section>
+
+  <section class="bay" id="bay-ticket" hidden>
+    <div class="bay-label"><span class="bay-num">BAY&nbsp;02</span><span class="bay-name">Queue</span></div>
+
+    <div class="ticket">
+      <div class="ticket-top">
+        <div>
+          <span class="ticket-label">Job ID</span>
+          <span class="ticket-id" id="ticketId">—</span>
+        </div>
+        <span class="status-badge" id="statusBadge" data-state="pending">
+          <span class="status-dot"></span><span class="status-text">pending</span>
+        </span>
+      </div>
+
+      <ol class="steps" id="steps">
+        <li data-step="uploaded" class="done"><span class="step-dot"></span>Uploaded</li>
+        <li data-step="pending"><span class="step-dot"></span>Queued</li>
+        <li data-step="processing"><span class="step-dot"></span>Processing</li>
+        <li data-step="completed"><span class="step-dot"></span>Complete</li>
+      </ol>
+
+      <p class="ticket-note" id="ticketNote">Waiting for a worker to pick this up…</p>
+    </div>
+  </section>
+
+  <section class="bay" id="bay-results" hidden>
+    <div class="bay-label"><span class="bay-num">BAY&nbsp;03</span><span class="bay-name">Inspection docket</span></div>
+
+    <div class="docket">
+      <div class="docket-head">
+        <div>
+          <span class="docket-label">Result for</span>
+          <span class="docket-id" id="docketId">—</span>
+        </div>
+        <div class="stamp-wrap" id="stampWrap">
+          <div class="stamp" id="stamp" data-verdict="clean">CLEAN</div>
+        </div>
+      </div>
+
+      <div class="docket-body">
+        <div class="issues-col">
+          <h3 class="col-title">Findings</h3>
+          <ul class="issues-list" id="issuesList"></ul>
+          <p class="no-issues" id="noIssues" hidden>No issues detected. This image cleared every check.</p>
+        </div>
+
+        <div class="meta-col">
+          <h3 class="col-title">Capture metadata</h3>
+          <dl class="meta-grid" id="metaGrid"></dl>
+
+          <button type="button" class="btn-ghost-sm" id="toggleRaw">Show raw check data ▾</button>
+          <pre class="raw-json" id="rawJson" hidden></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bay" id="bay-recent">
+    <div class="bay-label"><span class="bay-num">BAY&nbsp;04</span><span class="bay-name">Recent intake</span></div>
+    <div class="recent-wrap">
+      <table class="recent-table" id="recentTable">
+        <thead>
+          <tr><th>File</th><th>Status</th><th>Verdict</th><th>Uploaded</th><th></th></tr>
+        </thead>
+        <tbody id="recentBody">
+          <tr class="recent-empty"><td colspan="5">Nothing processed yet this session.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-foot">
+  <span>Vehicle Image Processor — async intake line</span>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
