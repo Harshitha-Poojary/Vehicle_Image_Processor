@@ -73,6 +73,47 @@ and durably written — that's the whole point of doing this asynchronously: lar
 slow checks (OCR in particular) shouldn't hold an HTTP connection open, and one slow image
 shouldn't block the next upload from being accepted.
 
+### Full request lifecycle
+ 
+Concretely, a single image's journey through both the HTTP layer and the background
+worker, with the two error exits called out explicitly:
+ 
+```
+                        ┌─ bad mime / oversized / undecodable ──► 400, nothing persisted
+                        │
+ POST /api/images ──────┤
+                        │
+                        └─ valid ──► write file + `images` row (status=pending)
+                                            │
+                                            ▼
+                                   enqueue({ imageId }) + mirror in `jobs` table
+                                            │
+                                            ▼
+                                   202 Accepted { id, status_url, result_url }
+                                            │
+                          ┌─────────────────┘  (client returns to polling; server keeps going)
+                          ▼
+                 queue worker picks up job (concurrency = 2)
+                          │
+                          ▼
+                 status -> processing (processing_started_at set)
+                          │
+                          ▼
+                 run all 6 checks in parallel ──┬─ succeeds ──► write analysis_results
+                                                 │                status -> completed
+                                                 │
+                                                 └─ throws (e.g. disk read error)
+                                                          │
+                                                          ▼
+                                                 retry (up to 3x, with backoff)
+                                                          │
+                                        ┌─────────────────┴─────────────────┐
+                                        ▼                                   ▼
+                               a retry succeeds                 all retries exhausted
+                               → completed as above              → status -> failed
+                                                                    failure_reason set
+```
+
 ## Processing flow
 
 What happens after the row is enqueued, entirely off the request path:
