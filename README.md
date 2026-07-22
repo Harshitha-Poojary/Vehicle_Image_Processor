@@ -1,3 +1,6 @@
+Deployment link:  https://vehicleimageprocessor-production-a93f.up.railway.app
+( vehicleimageprocessor-production-a93f.up.railway.app )
+
 # Vehicle Image Processor
 
 Async backend for uploading field vehicle images and analyzing them for common data-quality
